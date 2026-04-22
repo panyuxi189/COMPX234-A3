@@ -1,12 +1,10 @@
 import socket
-import threading
 import sys
 
 def build_message(line):
     """
     把一行指令转换成带 NNN 的协议格式
     """
-    msg_body = line.strip()
     msg_body = line.strip()
     length = len(msg_body) + 4  # 3字节长度 + 1空格
     
@@ -43,8 +41,8 @@ def is_valid_put(line):
     检查 PUT 是否满足长度限制（970）
     """
     parts = line.split()
-    if parts[0] != "PUT":
-        return True
+    if not parts:
+        return False
     
     if len(parts) < 3:
         return False
@@ -74,12 +72,12 @@ def run_client(host, port, filename):
                 # 发送
                 sock.sendall(msg)
                 # 接收响应
-                response = sock.recv(1024).decode()
+                response = recv_full_message(sock)
                 if response is None:
                     print("Server disconnected")
                     break
                 # 打印
-                print(response)
+                print(f"{line}: {response[4:]}")
         # 4. 关闭连接
         sock.close()
     # 5. 关闭文件 (自动由 with 语句处理)
